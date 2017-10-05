@@ -31,35 +31,50 @@ li {
   background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)); }
 
 .CharacterList {
-  height: 150px;
+  height: 250px;
   width: 312px;
   overflow-y: scroll; }
 
 .CharacterList li {
   display: block; }
 
-.btn-group button {
-  background-color: #4CAF50;
-  /* Green background */
-  border: 1px solid green;
-  /* Green border */
-  color: white;
-  /* White text */
-  padding: 10px 24px;
-  /* Some padding */
+/* Add a background color on hover */
+.Character:hover {
+  background-image: linear-gradient(to bottom, rgba(0, 252, 135, 0.5), rgba(0, 252, 135, 0.5)); }
+
+button {
   cursor: pointer;
   /* Pointer/hand icon */
-  width: 50%;
-  /* Set a width if needed */
-  display: block;
-  /* Make the buttons appear below each other */ }
+  background-color: transparent;
+  border-color: none;
+  width: inherit;
+  border: none;
+  outline: none; }
 
-.btn-group button:not(:last-child) {
-  border-bottom: none;
-  /* Prevent double borders */ }
+button h4 {
+  color: #00FC87;
+  font-weight: bold; }
 
-/* Add a background color on hover */
-.btn-group button:hover {
-  background-color: #3e8e41; }
+.FilmItem {
+  width: 352px;
+  margin-right: 80px;
+  margin-bottom: 80px; }
+
+.Character {
+  width: 100%; }
+
+ul::-webkit-scrollbar {
+  height: 10px;
+  background-color: transparent; }
+
+ul::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  background-color: transparent; }
+
+ul::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: #555; }
 
 /*# sourceMappingURL=styles.css.map */

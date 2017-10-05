@@ -10448,18 +10448,25 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Person = function (_React$Component) {
     _inherits(Person, _React$Component);
 
-    function Person() {
+    function Person(props) {
         _classCallCheck(this, Person);
 
-        var _this = _possibleConstructorReturn(this, (Person.__proto__ || Object.getPrototypeOf(Person)).call(this));
+        var _this = _possibleConstructorReturn(this, (Person.__proto__ || Object.getPrototypeOf(Person)).call(this, props));
 
         _this.state = {
             personInfo: null
         };
+        _this.handleClick = _this.handleClick.bind(_this);
         return _this;
     }
 
     _createClass(Person, [{
+        key: 'handleClick',
+        value: function handleClick(personInfo) {
+            this.setState({ personInfo: personInfo });
+            console.log(this.state.personInfo);
+        }
+    }, {
         key: 'componentDidMount',
         value: function componentDidMount() {
             var _this2 = this;
@@ -10476,6 +10483,7 @@ var Person = function (_React$Component) {
             if (!this.state.personInfo) {
                 return _react2.default.createElement('div', null);
             }
+            console.log(this.state.personInfo);
             return _react2.default.createElement(
                 'div',
                 { className: 'Person myComponent' },
@@ -10505,7 +10513,7 @@ var Person = function (_React$Component) {
                 ),
                 _react2.default.createElement(Species, { url: this.state.personInfo.species }),
                 _react2.default.createElement(HomeWorld, { url: this.state.personInfo.homeworld }),
-                _react2.default.createElement(FilmHolder, { films: this.state.personInfo.films })
+                _react2.default.createElement(FilmHolder, { films: this.state.personInfo.films, clickHandler: this.handleClick })
             );
         }
     }]);
@@ -10537,6 +10545,19 @@ var Species = function (_React$Component2) {
                 var speciesInformation = response.data;
                 _this4.setState({ speciesInformation: speciesInformation });
             });
+        }
+    }, {
+        key: 'componentWillReceiveProps',
+        value: function componentWillReceiveProps(nextProps) {
+            var _this5 = this;
+
+            if (this.props != nextProps) {
+                var url = nextProps.url;
+                _axios2.default.get(url).then(function (response) {
+                    var speciesInformation = response.data;
+                    _this5.setState({ speciesInformation: speciesInformation });
+                });
+            }
         }
     }, {
         key: 'render',
@@ -10583,24 +10604,37 @@ var HomeWorld = function (_React$Component3) {
     function HomeWorld() {
         _classCallCheck(this, HomeWorld);
 
-        var _this5 = _possibleConstructorReturn(this, (HomeWorld.__proto__ || Object.getPrototypeOf(HomeWorld)).call(this));
+        var _this6 = _possibleConstructorReturn(this, (HomeWorld.__proto__ || Object.getPrototypeOf(HomeWorld)).call(this));
 
-        _this5.state = {
+        _this6.state = {
             homeworld: null
         };
-        return _this5;
+        return _this6;
     }
 
     _createClass(HomeWorld, [{
         key: 'componentDidMount',
         value: function componentDidMount() {
-            var _this6 = this;
+            var _this7 = this;
 
             var url = this.props.url;
             _axios2.default.get(url).then(function (response) {
                 var homeworld = response.data;
-                _this6.setState({ homeworld: homeworld });
+                _this7.setState({ homeworld: homeworld });
             });
+        }
+    }, {
+        key: 'componentWillReceiveProps',
+        value: function componentWillReceiveProps(nextProps) {
+            var _this8 = this;
+
+            if (this.props != nextProps) {
+                var url = nextProps.url;
+                _axios2.default.get(url).then(function (response) {
+                    var homeworld = response.data;
+                    _this8.setState({ homeworld: homeworld });
+                });
+            }
         }
     }, {
         key: 'render',
@@ -10647,39 +10681,81 @@ var Character = function (_React$Component4) {
     function Character() {
         _classCallCheck(this, Character);
 
-        var _this7 = _possibleConstructorReturn(this, (Character.__proto__ || Object.getPrototypeOf(Character)).call(this));
+        var _this9 = _possibleConstructorReturn(this, (Character.__proto__ || Object.getPrototypeOf(Character)).call(this));
 
-        _this7.state = {
+        _this9.state = {
             characterInfo: null
         };
-        return _this7;
+        var _isMounted = false;
+        return _this9;
     }
 
     _createClass(Character, [{
         key: 'componentDidMount',
         value: function componentDidMount() {
-            var _this8 = this;
+            var _this10 = this;
 
+            this.isMounted = true;
             _axios2.default.get(this.props.url).then(function (response) {
                 var characterInfo = response.data;
-                _this8.setState({ characterInfo: characterInfo });
+                if (_this10.isMounted) _this10.setState({ characterInfo: characterInfo });
             });
+
+            console.log('mounted');
+        }
+    }, {
+        key: 'componentWillReceiveProps',
+        value: function componentWillReceiveProps(nextProps) {
+            var _this11 = this;
+
+            if (this.props != nextProps) {
+                var url = nextProps.url;
+                _axios2.default.get(url).then(function (response) {
+                    var characterInfo = response.data;
+                    if (_this11.isMounted) {
+                        _this11.setState({ characterInfo: characterInfo });
+                    } else {}
+                });
+                console.log('will receive props');
+            }
+        }
+    }, {
+        key: 'componentWillUnmount',
+        value: function componentWillUnmount() {
+            console.log('unmounting');
+            this.isMounted = false;
         }
     }, {
         key: 'render',
         value: function render() {
+            var _this12 = this;
+
             if (!this.state.characterInfo) {
                 return _react2.default.createElement('div', null);
             }
             return _react2.default.createElement(
                 'div',
-                { className: 'Character' },
+                { className: 'Character', onClick: function onClick() {
+                        _this12.props.clickHandler(_this12.state.characterInfo);
+                    } },
                 _react2.default.createElement(
                     'button',
                     null,
-                    this.state.characterInfo.name
+                    _react2.default.createElement(
+                        'p',
+                        null,
+                        this.state.characterInfo.name
+                    )
                 )
             );
+        }
+    }, {
+        key: 'isMounted',
+        set: function set(isMounted) {
+            this._isMounted = isMounted;
+        },
+        get: function get() {
+            return this._isMounted;
         }
     }]);
 
@@ -10692,15 +10768,14 @@ var CharacterHolder = function (_React$Component5) {
     function CharacterHolder() {
         _classCallCheck(this, CharacterHolder);
 
-        var _this9 = _possibleConstructorReturn(this, (CharacterHolder.__proto__ || Object.getPrototypeOf(CharacterHolder)).call(this));
+        var _this13 = _possibleConstructorReturn(this, (CharacterHolder.__proto__ || Object.getPrototypeOf(CharacterHolder)).call(this));
 
-        _this9.state = {
+        _this13.state = {
             characters: null,
             visible: true
         };
-
-        _this9.onClick = _this9.onClick.bind(_this9);
-        return _this9;
+        _this13.onClick = _this13.onClick.bind(_this13);
+        return _this13;
     }
 
     _createClass(CharacterHolder, [{
@@ -10708,6 +10783,14 @@ var CharacterHolder = function (_React$Component5) {
         value: function componentDidMount() {
             var characters = this.props.characters;
             this.setState({ characters: characters });
+        }
+    }, {
+        key: 'componentWillReceiveProps',
+        value: function componentWillReceiveProps(nextProps) {
+            if (this.props != nextProps) {
+                var characters = this.props.characters;
+                this.setState({ characters: characters });
+            }
         }
     }, {
         key: 'onClick',
@@ -10721,11 +10804,12 @@ var CharacterHolder = function (_React$Component5) {
             if (!this.state.characters) {
                 return _react2.default.createElement('div', null);
             }
+            var clickHandler = this.props.clickHandler;
             var charactersArray = this.state.characters.map(function (url, i) {
                 return _react2.default.createElement(
                     'li',
                     null,
-                    _react2.default.createElement(Character, { url: url, key: i })
+                    _react2.default.createElement(Character, { url: url, key: new Date(), clickHandler: clickHandler })
                 );
             });
             return _react2.default.createElement(
@@ -10735,9 +10819,9 @@ var CharacterHolder = function (_React$Component5) {
                     'button',
                     { onClick: this.onClick },
                     _react2.default.createElement(
-                        'p',
+                        'h4',
                         null,
-                        'Characters '
+                        'Characters: '
                     )
                 ),
                 this.state.visible ? _react2.default.createElement(
@@ -10758,35 +10842,53 @@ var Film = function (_React$Component6) {
     function Film() {
         _classCallCheck(this, Film);
 
-        var _this10 = _possibleConstructorReturn(this, (Film.__proto__ || Object.getPrototypeOf(Film)).call(this));
+        var _this14 = _possibleConstructorReturn(this, (Film.__proto__ || Object.getPrototypeOf(Film)).call(this));
 
-        _this10.state = {
+        _this14.state = {
             filmUrl: null,
             filmInfo: null,
             theMvDbInfo: null
         };
-        return _this10;
+        return _this14;
     }
 
     _createClass(Film, [{
         key: 'componentDidMount',
         value: function componentDidMount() {
-            var _this11 = this;
+            var _this15 = this;
 
             var filmUrl = this.props.url;
             _axios2.default.get(filmUrl).then(function (response) {
                 var filmInfo = response.data;
-                _this11.setState({ filmInfo: filmInfo });
+                _this15.setState({ filmInfo: filmInfo });
             });
             this.setState({ filmUrl: filmUrl });
             var filmNumber = parseInt(filmUrl.match(/\d/)[0]);
             var filmApiUrl = (0, _helper.getUrlforFilm)(filmNumber);
             _axios2.default.get(filmApiUrl).then(function (response) {
                 var theMvDbInfo = response.data;
-                _this11.setState({ theMvDbInfo: theMvDbInfo });
+                _this15.setState({ theMvDbInfo: theMvDbInfo });
             });
+        }
+    }, {
+        key: 'componentWillReceiveProps',
+        value: function componentWillReceiveProps(nextProps) {
+            var _this16 = this;
 
-            console.log(filmApiUrl);
+            if (this.props != nextProps) {
+                var filmUrl = nextProps.url;
+                _axios2.default.get(filmUrl).then(function (response) {
+                    var filmInfo = response.data;
+                    _this16.setState({ filmInfo: filmInfo });
+                });
+                this.setState({ filmUrl: filmUrl });
+                var filmNumber = parseInt(filmUrl.match(/\d/)[0]);
+                var filmApiUrl = (0, _helper.getUrlforFilm)(filmNumber);
+                _axios2.default.get(filmApiUrl).then(function (response) {
+                    var theMvDbInfo = response.data;
+                    _this16.setState({ theMvDbInfo: theMvDbInfo });
+                });
+            }
         }
     }, {
         key: 'render',
@@ -10800,15 +10902,23 @@ var Film = function (_React$Component6) {
                 _react2.default.createElement(
                     'h3',
                     null,
-                    this.state.theMvDbInfo.title
+                    _react2.default.createElement(
+                        'p',
+                        null,
+                        this.state.theMvDbInfo.title
+                    )
                 ),
                 _react2.default.createElement(
                     'h4',
                     null,
-                    this.state.theMvDbInfo.tagline
+                    _react2.default.createElement(
+                        'p',
+                        null,
+                        this.state.theMvDbInfo.tagline
+                    )
                 ),
                 _react2.default.createElement('img', { src: (0, _helper.getPosterUrl)(this.state.theMvDbInfo.poster_path), alt: this.state.theMvDbInfo.title }),
-                _react2.default.createElement(CharacterHolder, { characters: this.state.filmInfo.characters })
+                _react2.default.createElement(CharacterHolder, { characters: this.state.filmInfo.characters, clickHandler: this.props.clickHandler })
             );
         }
     }]);
@@ -10822,12 +10932,12 @@ var FilmHolder = function (_React$Component7) {
     function FilmHolder() {
         _classCallCheck(this, FilmHolder);
 
-        var _this12 = _possibleConstructorReturn(this, (FilmHolder.__proto__ || Object.getPrototypeOf(FilmHolder)).call(this));
+        var _this17 = _possibleConstructorReturn(this, (FilmHolder.__proto__ || Object.getPrototypeOf(FilmHolder)).call(this));
 
-        _this12.state = {
+        _this17.state = {
             films: null
         };
-        return _this12;
+        return _this17;
     }
 
     _createClass(FilmHolder, [{
@@ -10837,17 +10947,26 @@ var FilmHolder = function (_React$Component7) {
             this.setState({ films: films });
         }
     }, {
+        key: 'componentWillReceiveProps',
+        value: function componentWillReceiveProps(nextProps) {
+            if (this.props != nextProps) {
+                var films = nextProps.films.sort();
+                this.setState({ films: films });
+            }
+        }
+    }, {
         key: 'render',
         value: function render() {
             if (!this.state.films) {
                 return _react2.default.createElement('div', null);
             }
+            var clickHandler = this.props.clickHandler;
 
             var filmsArray = this.state.films.map(function (film, i) {
                 return _react2.default.createElement(
                     'li',
                     null,
-                    _react2.default.createElement(Film, { url: film, key: i })
+                    _react2.default.createElement(Film, { url: film, key: film, clickHandler: clickHandler })
                 );
             });
 
@@ -10857,7 +10976,7 @@ var FilmHolder = function (_React$Component7) {
                 _react2.default.createElement(
                     'h3',
                     null,
-                    'Film Appearences'
+                    'Film appearences'
                 ),
                 _react2.default.createElement(
                     'ul',
