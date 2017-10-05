@@ -10695,10 +10695,10 @@ var Character = function (_React$Component4) {
         value: function componentDidMount() {
             var _this10 = this;
 
-            this._isMounted = true;
+            this.isMounted = true;
             _axios2.default.get(this.props.url).then(function (response) {
                 var characterInfo = response.data;
-                if (_this10._isMounted) _this10.setState({ characterInfo: characterInfo });
+                if (_this10.isMounted) _this10.setState({ characterInfo: characterInfo });
             });
 
             console.log('mounted');
@@ -10753,6 +10753,9 @@ var Character = function (_React$Component4) {
         key: 'isMounted',
         set: function set(isMounted) {
             this._isMounted = isMounted;
+        },
+        get: function get() {
+            return this._isMounted;
         }
     }]);
 

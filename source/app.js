@@ -148,13 +148,17 @@ class Character extends React.Component{
     set isMounted(isMounted){
         this._isMounted = isMounted;
     };
+
+    get isMounted(){
+        return this._isMounted;
+    }
     
 
     componentDidMount(){
-        this._isMounted = true
+        this.isMounted = true
         axios.get(this.props.url).then(response=>{
             let characterInfo = response.data
-            if(this._isMounted)
+            if(this.isMounted)
             this.setState({characterInfo})
         })
         
