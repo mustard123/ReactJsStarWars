@@ -4,11 +4,17 @@ import axios from 'axios'
 import {getUrlforFilm, getPosterUrl} from './helper.js'
 
 class Person extends React.Component{
-    constructor(){
-        super();
+    constructor(props){
+        super(props);
         this.state = {
             personInfo: null
         }
+        this.handleClick = this.handleClick.bind(this);
+    }
+
+    handleClick(personInfo){
+        this.setState({personInfo})
+        console.log(this.state.personInfo)
     }
 
     componentDidMount(){
@@ -19,13 +25,14 @@ class Person extends React.Component{
                 this.setState({personInfo})
             }
         )
-
+        
     }
 
     render(){
         if(!this.state.personInfo){
             return <div></div>
         }
+        console.log(this.state.personInfo)
         return(
             <div className="Person myComponent">
                 <h3>{this.state.personInfo.name}</h3>
@@ -34,8 +41,9 @@ class Person extends React.Component{
                 <p>Height: {this.state.personInfo.height}cm</p>
                 <Species url={this.state.personInfo.species}/>
                 <HomeWorld url={this.state.personInfo.homeworld}/>
-                <FilmHolder films={this.state.personInfo.films} />
+                <FilmHolder films={this.state.personInfo.films} clickHandler = {this.handleClick} />
             </div>
+            
         )
     }
 }
@@ -55,6 +63,17 @@ class Species extends React.Component{
             this.setState({speciesInformation})
 
         })
+    }
+
+    componentWillReceiveProps(nextProps){
+        if(this.props != nextProps){
+            let url = nextProps.url
+        axios.get(url).then(response=>{
+            let speciesInformation = response.data
+            this.setState({speciesInformation})
+
+        })
+        }
     }
 
     render(){
@@ -87,9 +106,19 @@ class HomeWorld extends React.Component{
             let homeworld = response.data;
             this.setState({homeworld})
 
-        })
-        
+        })       
 
+    }
+
+    componentWillReceiveProps(nextProps){
+        if(this.props != nextProps){
+            let url = nextProps.url
+        axios.get(url).then(response=>{
+            let homeworld = response.data
+            this.setState({homeworld})
+
+        })
+        }
     }
 
     render(){
@@ -114,14 +143,44 @@ class Character extends React.Component{
         this.state = {
             characterInfo:null
         }
+        let _isMounted = false;
     }
+    set isMounted(isMounted){
+        this._isMounted = isMounted;
+    };
+    
 
     componentDidMount(){
+        this._isMounted = true
         axios.get(this.props.url).then(response=>{
             let characterInfo = response.data
+            if(this._isMounted)
             this.setState({characterInfo})
         })
+        
+        console.log('mounted')
 
+    }
+
+    componentWillReceiveProps(nextProps){
+        if(this.props != nextProps){
+            let url = nextProps.url
+        axios.get(url).then(response=>{
+            let characterInfo = response.data
+            if(this.isMounted){
+                this.setState({characterInfo})
+            }
+            else{}
+            
+
+        })
+        console.log('will receive props')
+        }
+    }
+
+    componentWillUnmount(){
+        console.log('unmounting')
+        this.isMounted = false;
     }
 
     render(){
@@ -129,8 +188,9 @@ class Character extends React.Component{
             return (<div></div>)
         }
         return(
-            <div className="Character">
-                <button>{this.state.characterInfo.name}</button>
+            <div className="Character" onClick={ ()=>{
+                this.props.clickHandler(this.state.characterInfo)}}>
+                <button><p>{this.state.characterInfo.name}</p></button>
             </div>
         )
     }
@@ -143,13 +203,19 @@ class CharacterHolder extends React.Component{
             characters: null,
             visible: true
         }
-
         this.onClick = this.onClick.bind(this)
     }
 
     componentDidMount(){
         let characters = this.props.characters
         this.setState({characters})
+    }
+
+    componentWillReceiveProps(nextProps){
+        if(this.props != nextProps){
+            let characters = this.props.characters
+            this.setState({characters})
+        }
     }
 
     onClick(){
@@ -161,17 +227,18 @@ class CharacterHolder extends React.Component{
         if(!this.state.characters){
             return (<div></div>)
         }
+        let clickHandler = this.props.clickHandler
         let charactersArray = this.state.characters.map(function(url, i){
-                return (<li><Character url={url} key={i}></Character></li>);
+                return (<li><Character url={url} key={new Date()} clickHandler={clickHandler}></Character></li>);
         })        
         return(
             <div className="CharacterHolder" >
                 <button onClick={this.onClick}>
-                    <p>Characters </p>
+                    <h4>Characters: </h4>
                 </button>
                 
                 {(this.state.visible) ?
-                    <ul className="CharacterList">
+                    <ul className="CharacterList"  >
                     {charactersArray}
                 </ul> : null
                 }
@@ -180,6 +247,7 @@ class CharacterHolder extends React.Component{
         )
     }
 }
+
 
 
 
@@ -206,9 +274,25 @@ class Film extends React.Component{
             let theMvDbInfo = response.data
             this.setState({theMvDbInfo})
         })
-
-        console.log(filmApiUrl)
     }
+
+    componentWillReceiveProps(nextProps){
+        if(this.props != nextProps){
+            let filmUrl = nextProps.url
+            axios.get(filmUrl).then(response => {
+                let filmInfo = response.data
+                this.setState({filmInfo})
+            })
+            this.setState({filmUrl})
+            let filmNumber = parseInt(filmUrl.match(/\d/)[0])
+            let filmApiUrl =(getUrlforFilm(filmNumber))
+            axios.get(filmApiUrl).then(response => {
+                let theMvDbInfo = response.data
+                this.setState({theMvDbInfo})
+            })
+        }
+    }
+    
 
     render(){
         if(!this.state.filmUrl || !this.state.filmInfo || !this.state.theMvDbInfo){
@@ -216,10 +300,10 @@ class Film extends React.Component{
         }
         return(
             <div className="FilmItem">
-                <h3>{this.state.theMvDbInfo.title}</h3>
-                <h4>{this.state.theMvDbInfo.tagline}</h4>
+                <h3><p>{this.state.theMvDbInfo.title}</p></h3>
+                <h4><p>{this.state.theMvDbInfo.tagline}</p></h4>
                 <img src={getPosterUrl(this.state.theMvDbInfo.poster_path)} alt={this.state.theMvDbInfo.title}/>
-                <CharacterHolder characters={this.state.filmInfo.characters}/>
+                <CharacterHolder characters={this.state.filmInfo.characters} clickHandler={this.props.clickHandler}/>
             </div>
         )
     }
@@ -235,22 +319,32 @@ class FilmHolder extends React.Component{
 
     componentDidMount(){
         let films = this.props.films.sort()
-        this.setState({films})
-
+        this.setState({films})      
     }
+
+    componentWillReceiveProps(nextProps){
+        if(this.props != nextProps){
+            let films = nextProps.films.sort()
+            this.setState({films})  
+        }
+    }
+
+    
+
     render(){
         if(!this.state.films){
             return (<div></div>)
         }
+        let clickHandler = this.props.clickHandler;
 
         let filmsArray = this.state.films.map(function (film, i){
-            return(<li><Film url={film} key={i}></Film></li>)
+            return(<li><Film url={film} key={film} clickHandler={clickHandler}></Film></li>)
 
         })
 
         return(
             <div className="FilmHolder">
-                <h3>Film Appearences</h3>
+                <h3>Film appearences</h3>
                 <ul>
                     {filmsArray}
                 </ul>
